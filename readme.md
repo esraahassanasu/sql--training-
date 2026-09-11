@@ -630,8 +630,7 @@ The project follows the required structure:
 ```text
 SchoolDatabase/
 │
-├── ERD AND MAPPING/
-│   └── erd.png
+├──erd.png
 │
 ├── SQL Scripts/
 │   ├── 01_schema.sql
