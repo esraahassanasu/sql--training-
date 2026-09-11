@@ -630,10 +630,10 @@ The project follows the required structure:
 ```text
 SchoolDatabase/
 │
-├── erd/
+├── ERD AND MAPPING/
 │   └── erd.png
 │
-├── scripts/
+├── SQL Scripts/
 │   ├── 01_schema.sql
 │   ├── 02_seed.sql
 │   ├── 03_joins.sql
@@ -641,7 +641,7 @@ SchoolDatabase/
 │   ├── 05_procedures.sql
 │   └── 06_functions.sql
 │
-└── README.md
+└── readme.md
 ```
 
 ### File Description
