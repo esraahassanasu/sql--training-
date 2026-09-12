@@ -5,7 +5,7 @@ CREATE OR ALTER VIEW vw_StudentsByDepartment
 AS
 SELECT
     s.StudentId,
-    s.FirstName + ' ' + s.LastName AS StudentName,
+   s.FullName AS StudentName,
     s.Email,
     d.DepartmentId,
     d.DepartmentName
@@ -35,7 +35,7 @@ CREATE OR ALTER VIEW vw_StudentEnrollments
 AS
 SELECT
     s.StudentId,
-    s.FirstName + ' ' + s.LastName AS StudentName,
+    s.FullName AS StudentName,
     d.DepartmentName,
     c.CourseCode,
     c.CourseName,
@@ -51,21 +51,25 @@ INNER JOIN Course AS c
     ON e.CourseId = c.CourseId;
 GO
 -- Teacher Hierarchy
-CREATE OR ALTER VIEW vw_TeacherHierarchy
+CREATE OR ALTER VIEW dbo.vw_TeacherHierarchy
 AS
 SELECT
     t.TeacherId,
-    t.FirstName + ' ' + t.LastName AS TeacherName,
+    t.FullName AS TeacherName,
     d.DepartmentName,
     t.SupervisorId,
     COALESCE(
-        sup.FirstName + ' ' + sup.LastName,
-        'No Supervisor'
-    ) AS SupervisorName
-FROM Teacher AS t
-INNER JOIN Department AS d
+        sup.FirstName + N' ' + sup.LastName,
+        N'No Supervisor'
+    ) AS SupervisorName,
+    CASE
+        WHEN d.LeadTeacherId = t.TeacherId THEN 1
+        ELSE 0
+    END AS IsLeadTeacher
+FROM dbo.Teacher AS t
+INNER JOIN dbo.Department AS d
     ON t.DepartmentId = d.DepartmentId
-LEFT JOIN Teacher AS sup
+LEFT JOIN dbo.Teacher AS sup
     ON t.SupervisorId = sup.TeacherId;
 GO
 -- Test All Views

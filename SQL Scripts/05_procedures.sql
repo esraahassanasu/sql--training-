@@ -263,10 +263,10 @@ BEGIN
             e.EnrollmentDate,
             e.Grade,
 
-            CASE
-                WHEN e.Grade IS NULL THEN 'Pending'
-                WHEN e.Grade >= 50 THEN 'Passed'
-                ELSE 'Failed'
+           CASE
+            WHEN e.IsPassed IS NULL THEN N'Pending'
+            WHEN e.IsPassed = 1 THEN N'Passed'
+            ELSE N'Failed'
             END AS Result
 
         FROM dbo.Student AS s
@@ -328,7 +328,7 @@ BEGIN
                 sup.FirstName + N' ' + sup.LastName,
                 'No Supervisor'
             ) AS SupervisorName
-
+            
         FROM dbo.Teacher AS t
 
         INNER JOIN dbo.Department AS d

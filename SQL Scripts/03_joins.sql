@@ -4,7 +4,7 @@ GO
 -- Students with their Departments
 SELECT
     s.StudentId,
-    s.FirstName + ' ' + s.LastName AS StudentName,
+    s.FullName AS StudentName,
     s.Email,
     d.DepartmentName
 FROM Student s

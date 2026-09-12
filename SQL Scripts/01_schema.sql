@@ -193,6 +193,13 @@ ADD FullName AS
 );
 GO
 
+ALTER TABLE dbo.Teacher
+ADD FullName AS
+(
+    FirstName + N' ' + LastName
+);
+GO
+
 -- COMPUTED PASS STATUS
 
 ALTER TABLE dbo.Enrollment
