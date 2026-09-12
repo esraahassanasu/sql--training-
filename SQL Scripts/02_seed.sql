@@ -29,6 +29,25 @@ VALUES
     ('Karim', 'Wael', 'karim.wael@school.com', 3, 3),
     ('Menna', 'Ashraf', 'menna.ashraf@school.com', 4, 4);
 GO
+
+-- Lead Teachers
+UPDATE dbo.Department
+SET LeadTeacherId = 1
+WHERE DepartmentId = 1;
+
+UPDATE dbo.Department
+SET LeadTeacherId = 2
+WHERE DepartmentId = 2;
+
+UPDATE dbo.Department
+SET LeadTeacherId = 3
+WHERE DepartmentId = 3;
+
+UPDATE dbo.Department
+SET LeadTeacherId = 4
+WHERE DepartmentId = 4;
+GO
+
 -- Course
 INSERT INTO Course
     (CourseName, CourseCode, DepartmentId, TeacherId)
