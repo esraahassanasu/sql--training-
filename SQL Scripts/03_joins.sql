@@ -1,81 +1,92 @@
 USE SchoolDatabase;
 GO
 
--- Students with their Departments
 SELECT
     s.StudentId,
     s.FullName AS StudentName,
     s.Email,
     d.DepartmentName
-FROM Student s
-INNER JOIN Department d
+FROM dbo.Student AS s
+INNER JOIN dbo.Department AS d
     ON s.DepartmentId = d.DepartmentId
-ORDER BY d.DepartmentName, s.LastName;
+ORDER BY
+    d.DepartmentName,
+    s.LastName;
 GO
--- Courses with their Department and Teacher
+
 SELECT
     c.CourseId,
     c.CourseCode,
     c.CourseName,
     d.DepartmentName,
-    t.FirstName + ' ' + t.LastName AS TeacherName
-FROM Course c
-INNER JOIN Department d
+    t.FullName AS TeacherName
+FROM dbo.Course AS c
+INNER JOIN dbo.Department AS d
     ON c.DepartmentId = d.DepartmentId
-INNER JOIN Teacher t
+INNER JOIN dbo.Teacher AS t
     ON c.TeacherId = t.TeacherId
-ORDER BY d.DepartmentName, c.CourseCode;
+ORDER BY
+    d.DepartmentName,
+    c.CourseCode;
 GO
--- students with their Courses, Enrollment Dates, and Grades
+
 SELECT
     s.StudentId,
-    s.FirstName + ' ' + s.LastName AS StudentName,
+    s.FullName AS StudentName,
     c.CourseCode,
     c.CourseName,
     e.EnrollmentDate,
     e.Grade
-FROM Enrollment e
-INNER JOIN Student s
+FROM dbo.Enrollment AS e
+INNER JOIN dbo.Student AS s
     ON e.StudentId = s.StudentId
-INNER JOIN Course c
+INNER JOIN dbo.Course AS c
     ON e.CourseId = c.CourseId
-ORDER BY s.StudentId, e.EnrollmentDate;
+ORDER BY
+    s.StudentId,
+    e.EnrollmentDate;
 GO
--- Teachers with their Supervisors
+
 SELECT
     t.TeacherId,
-    t.FirstName + ' ' + t.LastName AS TeacherName,
+    t.FullName AS TeacherName,
     d.DepartmentName,
-    COALESCE(
-        sup.FirstName + ' ' + sup.LastName,
-        'No Supervisor'
-    ) AS SupervisorName
-FROM Teacher t
-INNER JOIN Department d
+    COALESCE(sup.FullName, N'No Supervisor') AS SupervisorName
+FROM dbo.Teacher AS t
+INNER JOIN dbo.Department AS d
     ON t.DepartmentId = d.DepartmentId
-LEFT JOIN Teacher sup
+LEFT JOIN dbo.Teacher AS sup
     ON t.SupervisorId = sup.TeacherId
-ORDER BY d.DepartmentName, t.LastName;
+ORDER BY
+    d.DepartmentName,
+    t.LastName;
 GO
--- Selecting Students with their Departments, Courses, Teachers, Enrollment Dates, and Grades
+
 SELECT
     s.StudentId,
-    s.FirstName + ' ' + s.LastName AS StudentName,
+    s.FullName AS StudentName,
     d.DepartmentName,
     c.CourseCode,
     c.CourseName,
-    t.FirstName + ' ' + t.LastName AS TeacherName,
+    t.FullName AS TeacherName,
     e.EnrollmentDate,
     e.Grade,
-    e.IsPassed
-FROM Student s
-INNER JOIN Department d
+    CASE
+        WHEN e.IsPassed IS NULL THEN N'Pending'
+        WHEN e.IsPassed = 1 THEN N'Passed'
+        ELSE N'Failed'
+    END AS Result
+FROM dbo.Student AS s
+INNER JOIN dbo.Department AS d
     ON s.DepartmentId = d.DepartmentId
-INNER JOIN Enrollment e
+INNER JOIN dbo.Enrollment AS e
     ON s.StudentId = e.StudentId
-INNER JOIN Course c
+INNER JOIN dbo.Course AS c
     ON e.CourseId = c.CourseId
-INNER JOIN Teacher t
+INNER JOIN dbo.Teacher AS t
     ON c.TeacherId = t.TeacherId
-ORDER BY s.StudentId, c.CourseCode;
+ORDER BY
+    d.DepartmentName,
+    s.StudentId,
+    c.CourseCode;
 GO

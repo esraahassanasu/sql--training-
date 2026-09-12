@@ -90,14 +90,12 @@ BEGIN
 END;
 GO
 
--- TESTING FUNCTIONS
-
 SELECT
     dbo.fn_IsPassed(100) AS Grade_100,
-    dbo.fn_IsPassed(75)  AS Grade_75,
-    dbo.fn_IsPassed(50)  AS Grade_50,
-    dbo.fn_IsPassed(49)  AS Grade_49,
-    dbo.fn_IsPassed(0)   AS Grade_0,
+    dbo.fn_IsPassed(75) AS Grade_75,
+    dbo.fn_IsPassed(50) AS Grade_50,
+    dbo.fn_IsPassed(49) AS Grade_49,
+    dbo.fn_IsPassed(0) AS Grade_0,
     dbo.fn_IsPassed(NULL) AS Grade_NULL;
 GO
 
@@ -114,32 +112,8 @@ GO
 
 SELECT
     s.StudentId,
-
-    dbo.fn_GetStudentFullName(s.StudentId)
-        AS StudentFullName,
-
-    dbo.fn_GetStudentEnrollmentCount(s.StudentId)
-        AS EnrollmentCount,
-
-    dbo.fn_GetStudentAverageGrade(s.StudentId)
-        AS AverageGrade
-
-FROM dbo.Student AS s
-ORDER BY
-    s.StudentId;
-GO
-
-SELECT
-    StudentId,
-    dbo.fn_GetStudentFullName(StudentId) AS StudentFullName
-FROM dbo.Student
-ORDER BY
-    StudentId;
-GO
-
-SELECT
-    s.StudentId,
-    dbo.fn_GetStudentFullName(s.StudentId) AS StudentName,
+    dbo.fn_GetStudentFullName(s.StudentId) AS StudentFullName,
+    dbo.fn_GetStudentEnrollmentCount(s.StudentId) AS EnrollmentCount,
     dbo.fn_GetStudentAverageGrade(s.StudentId) AS AverageGrade
 FROM dbo.Student AS s
 ORDER BY
@@ -147,42 +121,11 @@ ORDER BY
 GO
 
 SELECT
-    s.StudentId,
-    dbo.fn_GetStudentFullName(s.StudentId) AS StudentName,
-    dbo.fn_GetStudentEnrollmentCount(s.StudentId) AS EnrollmentCount
-FROM dbo.Student AS s
-ORDER BY
-    s.StudentId;
+    dbo.fn_GetStudentFullName(999) AS FullName,
+    dbo.fn_GetStudentAverageGrade(999) AS AverageGrade,
+    dbo.fn_GetStudentEnrollmentCount(999) AS EnrollmentCount;
 GO
 
--- CREATE INDEXES
-
-CREATE NONCLUSTERED INDEX IX_Student_DepartmentId
-ON dbo.Student(DepartmentId);
-GO
-
-
-CREATE NONCLUSTERED INDEX IX_Teacher_DepartmentId
-ON dbo.Teacher(DepartmentId);
-GO
-
-
-CREATE NONCLUSTERED INDEX IX_Course_DepartmentId
-ON dbo.Course(DepartmentId);
-GO
-
-
-
-CREATE NONCLUSTERED INDEX IX_Course_TeacherId
-ON dbo.Course(TeacherId);
-GO
-
-
-CREATE NONCLUSTERED INDEX IX_Enrollment_CourseId
-ON dbo.Enrollment(CourseId);
-GO
-
--- Statistics for performance analysis
 SET STATISTICS IO ON;
 SET STATISTICS TIME ON;
 GO
@@ -228,4 +171,3 @@ GO
 SET STATISTICS IO OFF;
 SET STATISTICS TIME OFF;
 GO
-

@@ -1,5 +1,3 @@
--- Create Database
-
 IF DB_ID('SchoolDatabase') IS NULL
 BEGIN
     CREATE DATABASE SchoolDatabase;
@@ -8,9 +6,6 @@ GO
 
 USE SchoolDatabase;
 GO
-
--- CLEAN EXISTING TABLES
-
 
 IF OBJECT_ID('dbo.EnrollmentAudit', 'U') IS NOT NULL
     DROP TABLE dbo.EnrollmentAudit;
@@ -36,9 +31,6 @@ IF OBJECT_ID('dbo.Department', 'U') IS NOT NULL
     DROP TABLE dbo.Department;
 GO
 
--- DEPARTMENT TABLE
-
-
 CREATE TABLE dbo.Department
 (
     DepartmentId INT IDENTITY(1,1) NOT NULL,
@@ -52,9 +44,6 @@ CREATE TABLE dbo.Department
         UNIQUE (DepartmentName)
 );
 GO
-
--- TEACHER TABLE
-
 
 CREATE TABLE dbo.Teacher
 (
@@ -86,7 +75,6 @@ CREATE TABLE dbo.Teacher
 );
 GO
 
-
 ALTER TABLE dbo.Department
 ADD CONSTRAINT FK_Department_LeadTeacher
     FOREIGN KEY (LeadTeacherId)
@@ -94,12 +82,10 @@ ADD CONSTRAINT FK_Department_LeadTeacher
     ON DELETE NO ACTION;
 GO
 
-ALTER TABLE dbo.Department
-ADD CONSTRAINT UQ_Department_LeadTeacher
-    UNIQUE (LeadTeacherId);
+CREATE UNIQUE NONCLUSTERED INDEX UX_Department_LeadTeacher
+ON dbo.Department(LeadTeacherId)
+WHERE LeadTeacherId IS NOT NULL;
 GO
-
--- STUDENT TABLE
 
 CREATE TABLE dbo.Student
 (
@@ -121,8 +107,6 @@ CREATE TABLE dbo.Student
         ON DELETE NO ACTION
 );
 GO
-
--- COURSE TABLE
 
 CREATE TABLE dbo.Course
 (
@@ -150,9 +134,6 @@ CREATE TABLE dbo.Course
 );
 GO
 
--- ENROLLMENT TABLE
-
-
 CREATE TABLE dbo.Enrollment
 (
     StudentId INT NOT NULL,
@@ -177,15 +158,10 @@ CREATE TABLE dbo.Enrollment
         ON DELETE NO ACTION,
 
     CONSTRAINT CK_Enrollment_Grade
-        CHECK
-        (
-            Grade IS NULL
-            OR Grade BETWEEN 0 AND 100
-        )
+        CHECK (Grade IS NULL OR Grade BETWEEN 0 AND 100)
 );
 GO
 
--- COMPUTED FULL NAME
 ALTER TABLE dbo.Student
 ADD FullName AS
 (
@@ -200,8 +176,6 @@ ADD FullName AS
 );
 GO
 
--- COMPUTED PASS STATUS
-
 ALTER TABLE dbo.Enrollment
 ADD IsPassed AS
 (
@@ -212,8 +186,6 @@ ADD IsPassed AS
     END
 );
 GO
-
--- INDEXES
 
 CREATE NONCLUSTERED INDEX IX_Student_DepartmentId
 ON dbo.Student(DepartmentId);
@@ -235,7 +207,6 @@ CREATE NONCLUSTERED INDEX IX_Enrollment_CourseId
 ON dbo.Enrollment(CourseId);
 GO
 
--- VERIFY TABLES
 SELECT
     TABLE_NAME
 FROM INFORMATION_SCHEMA.TABLES
@@ -243,7 +214,6 @@ WHERE TABLE_TYPE = 'BASE TABLE'
 ORDER BY TABLE_NAME;
 GO
 
--- VERIFY INDEXES
 SELECT
     t.name AS TableName,
     i.name AS IndexName,

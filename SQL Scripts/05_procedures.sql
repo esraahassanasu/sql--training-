@@ -1,8 +1,6 @@
 USE SchoolDatabase;
 GO
 
--- Get Students By Department
-
 CREATE OR ALTER PROCEDURE dbo.sp_GetStudentsByDepartment
     @DepartmentId INT
 AS
@@ -24,8 +22,7 @@ BEGIN
 
         SELECT
             s.StudentId,
-            s.FirstName,
-            s.LastName,
+            s.FullName AS StudentName,
             s.Email,
             d.DepartmentName
         FROM dbo.Student AS s
@@ -37,16 +34,11 @@ BEGIN
             s.FirstName;
 
     END TRY
-
     BEGIN CATCH
         THROW;
     END CATCH
 END;
 GO
-
-
--- Enroll Student
-
 
 CREATE OR ALTER PROCEDURE dbo.sp_EnrollStudent
     @StudentId INT,
@@ -80,14 +72,14 @@ BEGIN
             RETURN;
         END;
 
-        IF EXISTS
+        IF NOT EXISTS
         (
             SELECT 1
             FROM dbo.Student AS s
             INNER JOIN dbo.Course AS c
-                ON c.CourseId = @CourseId
+                ON s.DepartmentId = c.DepartmentId
             WHERE s.StudentId = @StudentId
-              AND s.DepartmentId <> c.DepartmentId
+              AND c.CourseId = @CourseId
         )
         BEGIN
             RAISERROR(
@@ -137,14 +129,11 @@ BEGIN
         PRINT 'Student enrolled successfully.';
 
     END TRY
-
     BEGIN CATCH
         THROW;
     END CATCH
 END;
 GO
-
--- Transfer Student
 
 CREATE OR ALTER PROCEDURE dbo.sp_TransferStudent
     @StudentId INT,
@@ -218,7 +207,6 @@ BEGIN
         PRINT 'Student transferred successfully.';
 
     END TRY
-
     BEGIN CATCH
 
         IF XACT_STATE() <> 0
@@ -231,8 +219,6 @@ BEGIN
     END CATCH
 END;
 GO
-
---Get Student Enrollments
 
 CREATE OR ALTER PROCEDURE dbo.sp_GetStudentEnrollments
     @StudentId INT
@@ -255,48 +241,36 @@ BEGIN
 
         SELECT
             s.StudentId,
-            s.FirstName + N' ' + s.LastName AS StudentName,
+            s.FullName AS StudentName,
             d.DepartmentName,
             c.CourseId,
             c.CourseCode,
             c.CourseName,
             e.EnrollmentDate,
             e.Grade,
-
-           CASE
-            WHEN e.IsPassed IS NULL THEN N'Pending'
-            WHEN e.IsPassed = 1 THEN N'Passed'
-            ELSE N'Failed'
+            CASE
+                WHEN e.IsPassed IS NULL THEN N'Pending'
+                WHEN e.IsPassed = 1 THEN N'Passed'
+                ELSE N'Failed'
             END AS Result
-
         FROM dbo.Student AS s
-
         INNER JOIN dbo.Department AS d
             ON s.DepartmentId = d.DepartmentId
-
         INNER JOIN dbo.Enrollment AS e
             ON s.StudentId = e.StudentId
-
         INNER JOIN dbo.Course AS c
             ON e.CourseId = c.CourseId
-
         WHERE s.StudentId = @StudentId
-
         ORDER BY
             e.EnrollmentDate,
             c.CourseCode;
 
     END TRY
-
     BEGIN CATCH
         THROW;
     END CATCH
 END;
 GO
-
-
--- Get Teachers By Department
-
 
 CREATE OR ALTER PROCEDURE dbo.sp_GetTeachersByDepartment
     @DepartmentId INT
@@ -319,39 +293,33 @@ BEGIN
 
         SELECT
             t.TeacherId,
-            t.FirstName,
-            t.LastName,
+            t.FullName AS TeacherName,
             t.Email,
             d.DepartmentName,
-
             COALESCE(
-                sup.FirstName + N' ' + sup.LastName,
-                'No Supervisor'
-            ) AS SupervisorName
-            
+                sup.FullName,
+                N'No Supervisor'
+            ) AS SupervisorName,
+            CASE
+                WHEN d.LeadTeacherId = t.TeacherId THEN 1
+                ELSE 0
+            END AS IsLeadTeacher
         FROM dbo.Teacher AS t
-
         INNER JOIN dbo.Department AS d
             ON t.DepartmentId = d.DepartmentId
-
         LEFT JOIN dbo.Teacher AS sup
             ON t.SupervisorId = sup.TeacherId
-
         WHERE t.DepartmentId = @DepartmentId
-
         ORDER BY
             t.LastName,
             t.FirstName;
 
     END TRY
-
     BEGIN CATCH
         THROW;
     END CATCH
 END;
 GO
-
--- TESTING
 
 EXEC dbo.sp_GetStudentsByDepartment
     @DepartmentId = 1;
