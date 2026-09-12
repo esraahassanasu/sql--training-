@@ -9,7 +9,8 @@ GO
 USE SchoolDatabase;
 GO
 
--- Clean Existing Tables
+-- CLEAN EXISTING TABLES
+
 
 IF OBJECT_ID('dbo.EnrollmentAudit', 'U') IS NOT NULL
     DROP TABLE dbo.EnrollmentAudit;
@@ -35,12 +36,14 @@ IF OBJECT_ID('dbo.Department', 'U') IS NOT NULL
     DROP TABLE dbo.Department;
 GO
 
--- Department Table
+-- DEPARTMENT TABLE
+
 
 CREATE TABLE dbo.Department
 (
     DepartmentId INT IDENTITY(1,1) NOT NULL,
     DepartmentName NVARCHAR(100) NOT NULL,
+    LeadTeacherId INT NULL,
 
     CONSTRAINT PK_Department
         PRIMARY KEY (DepartmentId),
@@ -50,7 +53,8 @@ CREATE TABLE dbo.Department
 );
 GO
 
---Teacher Table
+-- TEACHER TABLE
+
 
 CREATE TABLE dbo.Teacher
 (
@@ -75,11 +79,27 @@ CREATE TABLE dbo.Teacher
     CONSTRAINT FK_Teacher_Supervisor
         FOREIGN KEY (SupervisorId)
         REFERENCES dbo.Teacher(TeacherId)
-        ON DELETE NO ACTION
+        ON DELETE NO ACTION,
+
+    CONSTRAINT CK_Teacher_SelfSupervisor
+        CHECK (SupervisorId IS NULL OR SupervisorId <> TeacherId)
 );
 GO
 
--- Student Table
+
+ALTER TABLE dbo.Department
+ADD CONSTRAINT FK_Department_LeadTeacher
+    FOREIGN KEY (LeadTeacherId)
+    REFERENCES dbo.Teacher(TeacherId)
+    ON DELETE NO ACTION;
+GO
+
+ALTER TABLE dbo.Department
+ADD CONSTRAINT UQ_Department_LeadTeacher
+    UNIQUE (LeadTeacherId);
+GO
+
+-- STUDENT TABLE
 
 CREATE TABLE dbo.Student
 (
@@ -102,7 +122,7 @@ CREATE TABLE dbo.Student
 );
 GO
 
--- Course Table
+-- COURSE TABLE
 
 CREATE TABLE dbo.Course
 (
@@ -129,13 +149,18 @@ CREATE TABLE dbo.Course
         ON DELETE NO ACTION
 );
 GO
--- Enrollment Table
+
+-- ENROLLMENT TABLE
+
 
 CREATE TABLE dbo.Enrollment
 (
     StudentId INT NOT NULL,
     CourseId INT NOT NULL,
-    EnrollmentDate DATE NOT NULL,
+    EnrollmentDate DATE NOT NULL
+        CONSTRAINT DF_Enrollment_EnrollmentDate
+        DEFAULT (CONVERT(DATE, GETDATE())),
+
     Grade DECIMAL(5,2) NULL,
 
     CONSTRAINT PK_Enrollment
@@ -155,20 +180,20 @@ CREATE TABLE dbo.Enrollment
         CHECK
         (
             Grade IS NULL
-            OR
-            (Grade >= 0 AND Grade <= 100)
+            OR Grade BETWEEN 0 AND 100
         )
 );
 GO
--- Computed FullName
 
+-- COMPUTED FULL NAME
 ALTER TABLE dbo.Student
 ADD FullName AS
 (
     FirstName + N' ' + LastName
 );
 GO
--- Computed IsPassed
+
+-- COMPUTED PASS STATUS
 
 ALTER TABLE dbo.Enrollment
 ADD IsPassed AS
@@ -181,7 +206,7 @@ ADD IsPassed AS
 );
 GO
 
--- Create Indexes
+-- INDEXES
 
 CREATE NONCLUSTERED INDEX IX_Student_DepartmentId
 ON dbo.Student(DepartmentId);
@@ -203,16 +228,15 @@ CREATE NONCLUSTERED INDEX IX_Enrollment_CourseId
 ON dbo.Enrollment(CourseId);
 GO
 
-
--- Verify Tables
-
+-- VERIFY TABLES
 SELECT
     TABLE_NAME
 FROM INFORMATION_SCHEMA.TABLES
 WHERE TABLE_TYPE = 'BASE TABLE'
 ORDER BY TABLE_NAME;
 GO
--- Verify Indexes
+
+-- VERIFY INDEXES
 SELECT
     t.name AS TableName,
     i.name AS IndexName,
